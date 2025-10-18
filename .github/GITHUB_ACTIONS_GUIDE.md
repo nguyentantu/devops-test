@@ -55,14 +55,14 @@ Add these secrets:
 
 After running Terraform, get the values:
 
-\`\`\`bash
+```bash
 cd terraform/environments/prod
 terraform output
-\`\`\`
+```
 
 Or get them from AWS CLI:
 
-\`\`\`bash
+```bash
 # ECR Repository URL
 aws ecr describe-repositories \\
   --repository-names sample-app-prod \\
@@ -79,16 +79,16 @@ aws ecs list-services \\
   --cluster sample-app-prod-cluster \\
   --query 'serviceArns[0]' \\
   --output text
-\`\`\`
+```
 
 ## Triggering the Pipeline
 
 ### Automatic Trigger
-\`\`\`bash
+```bash
 git add .
 git commit -m "Deploy new feature"
 git push origin main
-\`\`\`
+```
 
 ### Manual Trigger
 1. Go to \`Actions\` tab in GitHub
@@ -105,13 +105,13 @@ git push origin main
 3. Expand each job to see logs
 
 ### Check Deployment Status
-\`\`\`bash
+```bash
 # Service status
 aws ecs describe-services \\
   --cluster sample-app-prod-cluster \\
   --services sample-app-prod-service \\
   --query 'services[0].{Status:status,Running:runningCount,Desired:desiredCount}'
-\`\`\`
+```
 
 ## Rollback
 
@@ -128,7 +128,7 @@ aws ecs describe-services \\
 4. Click "Update"
 
 ### Option 3: Via AWS CLI
-\`\`\`bash
+```bash
 # List task definition revisions
 aws ecs list-task-definitions \\
   --family-prefix sample-app-prod \\
@@ -139,14 +139,14 @@ aws ecs update-service \\
   --cluster sample-app-prod-cluster \\
   --service sample-app-prod-service \\
   --task-definition sample-app-prod:PREVIOUS_REVISION
-\`\`\`
+```
 
 ### Option 4: Git Revert
-\`\`\`bash
+```bash
 # Revert the problematic commit
 git revert HEAD
 git push origin main
-\`\`\`
+```
 
 This triggers a new deployment with the previous code.
 
@@ -154,38 +154,38 @@ This triggers a new deployment with the previous code.
 
 ### Change Python Version
 Edit \`.github/workflows/deploy.yml\`:
-\`\`\`yaml
+```yaml
 - name: Set up Python
   uses: actions/setup-python@v5
   with:
     python-version: '3.11'  # Change version here
-\`\`\`
+```
 
 ### Add Environment Variables
 Edit \`.github/workflows/deploy.yml\`:
-\`\`\`yaml
+```yaml
 env:
   CUSTOM_VAR: value
   NODE_ENV: production
-\`\`\`
+```
 
 ### Add Deployment Notifications
 Add Slack notification step:
-\`\`\`yaml
+```yaml
 - name: Notify Slack
   if: always()
   uses: 8398a7/action-slack@v3
   with:
     status: \${{ job.status }}
     webhook_url: \${{ secrets.SLACK_WEBHOOK }}
-\`\`\`
+```
 
 ### Add Pre-deployment Checks
-\`\`\`yaml
+```yaml
 - name: Run integration tests
   run: |
     poetry run pytest tests/integration -v
-\`\`\`
+```
 
 ## Troubleshooting
 
@@ -203,7 +203,7 @@ Add Slack notification step:
 - Verify AWS credentials are correct
 - Check ECR repository exists
 - Ensure IAM user has ECR permissions:
-  \`\`\`json
+  ```json
   {
     "Version": "2012-10-17",
     "Statement": [{
@@ -220,7 +220,7 @@ Add Slack notification step:
       "Resource": "*"
     }]
   }
-  \`\`\`
+  ```
 
 ### ECS Deployment Fails
 - Check task definition is valid
@@ -248,16 +248,16 @@ Add Slack notification step:
 ## Pipeline Optimization
 
 ### Speed up builds
-\`\`\`yaml
+```yaml
 - name: Build Docker image
   uses: docker/build-push-action@v5
   with:
     cache-from: type=gha
     cache-to: type=gha,mode=max
-\`\`\`
+```
 
 ### Parallel jobs
-\`\`\`yaml
+```yaml
 jobs:
   test-unit:
     runs-on: ubuntu-latest
@@ -267,15 +267,15 @@ jobs:
   test-e2e:
     runs-on: ubuntu-latest
     needs: build
-\`\`\`
+```
 
 ### Conditional deployments
-\`\`\`yaml
+```yaml
 deploy:
   if: |
     github.ref == 'refs/heads/main' &&
     !contains(github.event.head_commit.message, '[skip ci]')
-\`\`\`
+```
 
 ## Security
 
