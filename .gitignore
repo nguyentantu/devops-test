@@ -7,3 +7,12 @@ docker
 *.zip
 client_secrets.json
 mycreds.txt
+
+
+# Terraform - Essential files to ignore
+**/.terraform/*
+*.terraform.lock.*
+*.tfstate
+*.tfstate.*
+!terraform.tfvars.example
+*.tfplan
